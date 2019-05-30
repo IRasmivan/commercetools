@@ -3,6 +3,7 @@ package com.rasmivan.commercetools.repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,6 @@ public interface InvoiceRepository  extends JpaRepository<Invoice, String>, JpaS
 			+ "where inv.timestamp >= :startDateTime "
 			+ "and inv.timestamp <= :endDateTime "
 			+ "order by inv.quantity desc")
-	List<TopSellingProductDto> getSalesforTimestamp(@Param("startDateTime")Timestamp startDateTime, 
-			@Param("endDateTime")Timestamp endDateTime, Pageable pageable);
+	List<TopSellingProductDto> getSalesforTimestamp(@Param("startDateTime")Instant startDateTime, 
+			@Param("endDateTime")Instant endDateTime, Pageable pageable);
 }

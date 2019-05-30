@@ -10,6 +10,8 @@ public final class MessageConstantsUtils {
 	
 	public static final String ERROR_SAVING = "Error while saving data  - ";
 	
+	public static final String UPDATE_STOCK_FAILED = "Update failed due to erroneous JSON";
+	
 	public static final String DUPLICATE_PRODUCT = "The Product already Exists.";
 	
 	public static final String DATABASE_CONNECTION = "Database Connection Error. Detail error: ";
@@ -25,5 +27,11 @@ public final class MessageConstantsUtils {
 	public static final String ERRONROUS_JSON = "update failed due to erroneous JSON :: Reason - ";
 	
 	public static final String STATISTIC_INVALID_TIME = "Invalid time for statistics, Please provide a valid value.";
+	
+	public static final String NO_STOCK_PRODUCTID = "There are no stock available for this productId";
+	
+	public static final String CONFLICT_MSG = "Please retry, stock version mismatch";
+	
+	public static final String PRECONDITION_MSG = "if-Match header is missing.";
 
 }

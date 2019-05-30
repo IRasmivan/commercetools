@@ -1,6 +1,7 @@
 package com.rasmivan.commercetools.domain;
 
-import java.sql.Timestamp;
+import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -23,7 +24,7 @@ public class Invoice {
 	
 	private ProductMaster productId;
 	
-	private Timestamp timestamp;
+	private Instant timestamp;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY) 
@@ -58,11 +59,11 @@ public class Invoice {
 	}
 
 	@Column(name = "timestamp", nullable = true, columnDefinition = "DATETIME(6)")
-	public Timestamp getTimestamp() {
+	public Instant getTimestamp() {
 		return timestamp;
 	}
 
-	public void setTimestamp(Timestamp timestamp) {
+	public void setTimestamp(Instant timestamp) {
 		this.timestamp = timestamp;
 	}
 	

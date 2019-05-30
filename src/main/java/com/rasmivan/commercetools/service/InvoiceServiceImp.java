@@ -14,18 +14,30 @@ import com.rasmivan.commercetools.repository.ProductRepository;
 import com.rasmivan.commercetools.constants.MessageConstantsUtils;
 import com.rasmivan.commercetools.domain.Invoice;
 
+/**
+ * The Class InvoiceServiceImp.
+ */
 @Service
 public class InvoiceServiceImp implements InvoiceService {
 	
+	/** The product repository. */
 	@Autowired
 	ProductRepository productRepository;
 	
+	/** The invoice repository. */
 	@Autowired
 	InvoiceRepository invoiceRepository;
 	
+	/** The product service. */
 	@Autowired
 	ProductService productService;
 	
+	/**
+	 * add invoice .
+	 *
+	 * @param invoiceDto the invoice dto
+	 * @return the invoice
+	 */
 	@Override
 	public Invoice addInvoice(InvoiceDto invoiceDto) {
 		if(checkForNullEmptyInvoiceDto(invoiceDto)) {
@@ -39,6 +51,12 @@ public class InvoiceServiceImp implements InvoiceService {
 		}
 	}
 	
+	/**
+	 * Copy invoice properties.
+	 *
+	 * @param invoiceDto the invoice dto
+	 * @return the invoice
+	 */
 	private Invoice copyInvoiceProperties(InvoiceDto invoiceDto) {
 		if(!productService.productExists(invoiceDto.getProductId())) {
 			throw new ErroneousJsonException(MessageConstantsUtils.PRODUCT_NOTFOUND);
@@ -58,6 +76,12 @@ public class InvoiceServiceImp implements InvoiceService {
 		return inv;
 	}
 
+	/**
+	 * Check for null empty invoice dto.
+	 *
+	 * @param invoiceDto the invoice dto
+	 * @return true, if successful
+	 */
 	private boolean checkForNullEmptyInvoiceDto(InvoiceDto invoiceDto) {
 		return invoiceDto != null && invoiceDto.getProductId() != null && invoiceDto.getQuantity() != null && invoiceDto.getTimestamp() != null;
 	}

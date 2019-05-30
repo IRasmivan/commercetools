@@ -1,6 +1,5 @@
 package com.rasmivan.commercetools.service;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -25,29 +24,57 @@ import com.rasmivan.commercetools.repository.StockRepository;
 import com.rasmivan.commercetools.constants.GeneralConstantsUtils;
 import com.rasmivan.commercetools.constants.MessageConstantsUtils;
 
-
+/**
+ * The Class StatisticServiceImp.
+ */
 @Service
 public class StatisticServiceImp implements StatisticService {
 	
+	/** The product repository. */
 	@Autowired
 	ProductRepository productRepository;
 	
+	/** The stock repository. */
 	@Autowired
 	StockRepository stockRepository;
 	
+	/** The invoice repository. */
 	@Autowired
 	InvoiceRepository invoiceRepository;
 	
+	/** The date utils. */
 	@Autowired
 	DateUtils dateUtils;
 	
 	/** The logger. */
 	private static final Logger LOGGER = LoggerFactory.getLogger(StatisticServiceImp.class);
 
+	/**
+	 * ************************************
+	 * ************************************
+	 * Get Statistics for the provided time [today, lastMonth]
+	 * ************************************
+	 * 
+	 * **** Failure Scenario Coverage *****
+	 * *** The below condition are checked before adding the stock into the database.
+	 * ** 1) Check if the User have given valid time (today or lastMonth). If its invalid time, then respond user as InvalidStatisticTimeException with message as 'Invalid time for statistics, Please provide a valid value'.
+	 * 
+	 * ** ~~ Special Scenario ~~
+	 * ** 1) If there are no stock available for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as 'There are no product that was available for provided <<time>>'.
+	 * ** 2) If there are stock available but less than 3 for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as 'There are only <<count of available stock>> product that had sales for <<time>>'.
+	 * ** 3) If there are no sales available for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are no product that was available for provided <<time>>'.
+	 * ** 4) If there are stock sales but less than 3 for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are only <<count of sales>> product that had sales for <<time>>'.
+	 * 
+	 * ************************************
+	 * ************************************
+	 *
+	 * @param time the time
+	 * @return the statistics
+	 */
 	@Override
 	public StatisticsDto getStatistics(String time) {
-		Timestamp startDateTime = null;
-		Timestamp endDateTime = null;
+		Instant startDateTime = null;
+		Instant endDateTime = null;
 		if(time.equalsIgnoreCase(GeneralConstantsUtils.TODAY)) {
 			startDateTime = dateUtils.getStartOfDay(Date.from(LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).toInstant()));
 			endDateTime = dateUtils.getEndOfDay(Date.from(LocalDate.now(ZoneOffset.UTC).atStartOfDay(ZoneOffset.UTC).toInstant()));
@@ -61,7 +88,15 @@ public class StatisticServiceImp implements StatisticService {
 		return populateStatistics(time, startDateTime, endDateTime);
 	}
 
-	private StatisticsDto populateStatistics(String time, Timestamp startDateTime, Timestamp endDateTime) {
+	/**
+	 * Populate statistics.
+	 *
+	 * @param time the time
+	 * @param startDateTime the start date time
+	 * @param endDateTime the end date time
+	 * @return the statistics dto
+	 */
+	private StatisticsDto populateStatistics(String time, Instant startDateTime, Instant endDateTime) {
 		StatisticsDto statisticsDto = new StatisticsDto();
 		statisticsDto.setRange(time);
 		statisticsDto.setRequestTimestamp(Instant.now().toString());
@@ -70,9 +105,17 @@ public class StatisticServiceImp implements StatisticService {
 		return statisticsDto;
 	}
 
-	private void setTopSellingProducts(String time, StatisticsDto statisticsDto, Timestamp startDateTime,
-			Timestamp endDateTime) {
-		Pageable pageable = PageRequest.of(GeneralConstantsUtils.PAGE_NO, GeneralConstantsUtils.PAGE_SIZE);
+	/**
+	 * Sets the top selling products.
+	 *
+	 * @param time the time
+	 * @param statisticsDto the statistics dto
+	 * @param startDateTime the start date time
+	 * @param endDateTime the end date time
+	 */
+	private void setTopSellingProducts(String time, StatisticsDto statisticsDto, Instant startDateTime,
+			Instant endDateTime) {
+		Pageable pageable = PageRequest.of(GeneralConstantsUtils.PAGE_NO, GeneralConstantsUtils.PAGE_SIZE_STATISTIC);
 		
 		List<TopSellingProductDto> topSellingProductDto = invoiceRepository.getSalesforTimestamp(startDateTime, endDateTime,pageable);
 		if(topSellingProductDto != null && !topSellingProductDto.isEmpty()) {
@@ -86,9 +129,17 @@ public class StatisticServiceImp implements StatisticService {
 		}
 	}
 
-	private void setTopAvailableProducts(String time, StatisticsDto statisticsDto, Timestamp startDateTime,
-			Timestamp endDateTime) {
-		Pageable pageable = PageRequest.of(GeneralConstantsUtils.PAGE_NO, GeneralConstantsUtils.PAGE_SIZE);
+	/**
+	 * Sets the top available products.
+	 *
+	 * @param time the time
+	 * @param statisticsDto the statistics dto
+	 * @param startDateTime the start date time
+	 * @param endDateTime the end date time
+	 */
+	private void setTopAvailableProducts(String time, StatisticsDto statisticsDto, Instant startDateTime,
+			Instant endDateTime) {
+		Pageable pageable = PageRequest.of(GeneralConstantsUtils.PAGE_NO, GeneralConstantsUtils.PAGE_SIZE_STATISTIC);
 		
 		List<TopAvailableProductDto> topAvailableProductDtos = stockRepository.getStockforTimestamp(startDateTime, endDateTime,pageable);
 		if(topAvailableProductDtos != null && !topAvailableProductDtos.isEmpty()) {

@@ -18,37 +18,62 @@ import com.rasmivan.commercetools.repository.StockRepository;
 import com.rasmivan.commercetools.constants.MessageConstantsUtils;
 import com.rasmivan.commercetools.domain.ProductMaster;
 
-
+/**
+ * The Class ProductServiceImp.
+ */
 @Service
 public class ProductServiceImp implements ProductService {
 	
+	/** The product repository. */
 	@Autowired
 	ProductRepository productRepository;
 	
+	/** The stock repository. */
 	@Autowired
 	StockRepository stockRepository;
 	
+	/** The invoice repository. */
 	@Autowired
 	InvoiceRepository invoiceRepository;
 
+	/*************************************
+	 *************************************
+	 * Add a New Product into the Database
+	 *************************************
+	 *
+	 ***** Failure Scenario Coverage *****
+	 **** The below condition are checked before adding the product into the database.
+	 *** 1) Check if the User have given valid JSON. If its Invalid JSON, then respond user as InvalidProduct
+	 *** 2) Check if the productId given by the user already exists in the database. If exists respond user with DuplicateException
+	 *** 3) If there are any exception while saving the products in database, then respond user as DuplicateException 
+	 *
+	 *************************************
+	 * If the user have provided a valid productId, then save the productId into Database.
+	 *************************************
+	 *
+	 *************************************
+	 *************************************/
 	@Override
 	public Long addProduct(ProductDto productDto) {
 		if(checkForNullEmptyProductDto(productDto)) { // Checking if the user have provided a valid Product
 			ProductMaster productMaster = new ProductMaster();
-			BeanUtils.copyProperties(productDto, productMaster); // Copy from DTO to Domain
+			BeanUtils.copyProperties(productDto, productMaster); // Copy from DTO to Domain using BeanUtils
 			try {
 				if(productExists(productMaster.getProductId())) {
-					throw new DuplicateException(MessageConstantsUtils.DUPLICATE_PRODUCT);
+					throw new DuplicateException(MessageConstantsUtils.DUPLICATE_PRODUCT); // Checking if the productId already exists in database.
 				}
 				return productRepository.save(productMaster).getId(); // JPA Save
 			} catch(Exception e) {
 				throw new DatabaseException(MessageConstantsUtils.ERROR_SAVING + e.getMessage());
 			}
 		} else {
-			throw new InvalidProduct(MessageConstantsUtils.INVALID_PRODUCT);
+			throw new InvalidProduct(MessageConstantsUtils.INVALID_PRODUCT); // Invalid JSON provided by the user.
 		}
 	}
 
+	/** Gets all the products that are available.
+	 * TODO: return page by page and restrict the size of the page that gets returned. This is out of scope for this excises.
+	 */
 	@Override
 	public List<ProductMaster> getAllProduct() {
 		try {
@@ -58,6 +83,9 @@ public class ProductServiceImp implements ProductService {
 		}
 	}
 	
+	/** 
+	 * Gets the first occurrence of a Stocks associated to the product.
+	 **/
 	@Override
 	public ProductDto getAllStockByProductId(String productId) {
 		if(productExists(productId)) {
@@ -67,12 +95,21 @@ public class ProductServiceImp implements ProductService {
 		}
 	}
 	
+	/** 
+	 * Check if the productId exists or not, if exists return true else false.
+	 */
 	@Override
 	public Boolean productExists(String productId) {
 		List<ProductMaster> prodMast = productRepository.findByProductId(productId);
 		return prodMast != null && !prodMast.isEmpty();
 	}
 
+	/**
+	 * Copy product properties.
+	 *
+	 * @param productMaster the product master
+	 * @return the product dto
+	 */
 	private ProductDto copyProductProperties(ProductMaster productMaster) {
 		ProductDto productDto = new ProductDto();
 		List<StockDto> stockDtos = new ArrayList<>();
@@ -88,10 +125,14 @@ public class ProductServiceImp implements ProductService {
 		return productDto;
 	}
 	
+	/**
+	 * Check for null empty product dto.
+	 *
+	 * @param productDto the product dto
+	 * @return true, if successful
+	 */
 	private boolean checkForNullEmptyProductDto(ProductDto productDto) {
 		return productDto != null && productDto.getProductId() != null && !productDto.getProductId().isEmpty();
 	}
-	
-	
 	
 }

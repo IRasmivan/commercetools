@@ -12,17 +12,27 @@ import org.springframework.web.bind.annotation.RestController;
 import com.rasmivan.commercetools.dto.StatisticsDto;
 import com.rasmivan.commercetools.service.StatisticService;
 
+/**
+ * The Class StatisticController.
+ */
 @RestController
 @CrossOrigin
 @RequestMapping("/commercetools/api/")
 public class StatisticController {
 	
+	/** The statistic service. */
 	@Autowired
 	StatisticService statisticService;
 	
+	/**
+	 * Gets the product.
+	 *
+	 * @param time the time
+	 * @return the product
+	 */
 	@CrossOrigin
 	@GetMapping(value = "v1/statistics")
-	public ResponseEntity<StatisticsDto> getProduct(@RequestParam String time){
+	public ResponseEntity<StatisticsDto> getStatistics(@RequestParam String time){
 		return new ResponseEntity<>(statisticService.getStatistics(time), HttpStatus.OK);
 	}
 	
