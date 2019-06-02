@@ -89,7 +89,7 @@ public class ProductServiceImp implements ProductService {
 	@Override
 	public ProductDto getAllStockByProductId(String productId) {
 		if(productExists(productId)) {
-			return copyProductProperties(productRepository.findByProductId(productId).get(0));
+			return copyProductProperties(productRepository.findByProductId(productId));
 		} else {
 			throw new InvalidProduct(MessageConstantsUtils.INVALID_PRODUCT);
 		}
@@ -100,8 +100,8 @@ public class ProductServiceImp implements ProductService {
 	 */
 	@Override
 	public Boolean productExists(String productId) {
-		List<ProductMaster> prodMast = productRepository.findByProductId(productId);
-		return prodMast != null && !prodMast.isEmpty();
+		ProductMaster prodMast = productRepository.findByProductId(productId);
+		return prodMast != null && prodMast.getId() != null;
 	}
 
 	/**

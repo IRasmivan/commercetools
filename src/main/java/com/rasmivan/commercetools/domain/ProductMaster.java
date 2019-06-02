@@ -26,10 +26,13 @@ public class ProductMaster {
 	/** The id. */
 	private Long id;
 	
+	/** The product id. */
 	private String productId;
 	
+	/** The stock. */
 	private Set<Stock> stock = new HashSet<>(0);
 	
+	/** The invoice. */
 	private Set<Invoice> invoice = new HashSet<>(0);
 
 	/**
@@ -53,12 +56,22 @@ public class ProductMaster {
 		this.id = id;
 	}
 
+	/**
+	 * Gets the product id.
+	 *
+	 * @return the product id
+	 */
 	@Column(name = "productid",columnDefinition = "VARCHAR(60)", unique = true, nullable = false)
 	public String getProductId() {
 		return productId;
 	}
 
 	
+	/**
+	 * Sets the product id.
+	 *
+	 * @param productId the new product id
+	 */
 	public void setProductId(String productId) {
 		this.productId = productId;
 	}
@@ -70,8 +83,6 @@ public class ProductMaster {
 	 *
 	 * @param id the id
 	 * @param productId the product id
-	 * @param createdDate the created date
-	 * @param modifiedDate the modified date
 	 */
 	public ProductMaster(Long id, String productId) {
 		super();
@@ -79,26 +90,49 @@ public class ProductMaster {
 		this.productId = productId;
 	}
 
+	/**
+	 * Instantiates a new product master.
+	 */
 	public ProductMaster() {
 		super();
 	}
 
+	/**
+	 * Gets the stock.
+	 *
+	 * @return the stock
+	 */
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "productId")
 	@JsonManagedReference
 	public Set<Stock> getStock() {
 		return stock;
 	}
 
+	/**
+	 * Sets the stock.
+	 *
+	 * @param stock the new stock
+	 */
 	public void setStock(Set<Stock> stock) {
 		this.stock = stock;
 	}
 
+	/**
+	 * Gets the invoice.
+	 *
+	 * @return the invoice
+	 */
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "productId")
 	@JsonManagedReference
 	public Set<Invoice> getInvoice() {
 		return invoice;
 	}
 
+	/**
+	 * Sets the invoice.
+	 *
+	 * @param invoice the new invoice
+	 */
 	public void setInvoice(Set<Invoice> invoice) {
 		this.invoice = invoice;
 	}

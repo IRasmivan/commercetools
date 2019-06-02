@@ -24,7 +24,7 @@ public final class MessageConstantsUtils {
 	
 	public static final String OUTDATED_STOCK ="Outdated Stock";
 	
-	public static final String ERRONROUS_JSON = "update failed due to erroneous JSON :: Reason - ";
+	public static final String ERRONROUS_JSON = "Invalid Request :: Reason - ";
 	
 	public static final String STATISTIC_INVALID_TIME = "Invalid time for statistics, Please provide a valid value.";
 	

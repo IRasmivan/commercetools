@@ -17,7 +17,7 @@ import com.rasmivan.commercetools.service.StatisticService;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/commercetools/api/")
+@RequestMapping("/commercetools/api")
 public class StatisticController {
 	
 	/** The statistic service. */
@@ -30,8 +30,7 @@ public class StatisticController {
 	 * @param time the time
 	 * @return the product
 	 */
-	@CrossOrigin
-	@GetMapping(value = "v1/statistics")
+	@GetMapping(value = "/v1/statistics")
 	public ResponseEntity<StatisticsDto> getStatistics(@RequestParam String time){
 		return new ResponseEntity<>(statisticService.getStatistics(time), HttpStatus.OK);
 	}

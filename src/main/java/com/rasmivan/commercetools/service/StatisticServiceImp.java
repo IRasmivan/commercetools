@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ import com.rasmivan.commercetools.constants.MessageConstantsUtils;
  * The Class StatisticServiceImp.
  */
 @Service
+@CacheConfig(cacheNames={"statistic"})
 public class StatisticServiceImp implements StatisticService {
 	
 	/** The product repository. */

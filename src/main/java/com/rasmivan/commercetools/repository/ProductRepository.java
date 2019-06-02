@@ -2,16 +2,24 @@ package com.rasmivan.commercetools.repository;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import com.rasmivan.commercetools.domain.ProductMaster;
 
+/**
+ * The Interface ProductRepository.
+ */
 @Transactional
 public interface ProductRepository  extends JpaRepository<ProductMaster, Long>, JpaSpecificationExecutor<ProductMaster>{
 
 	
-	List<ProductMaster> findByProductId(String productId);
+	/**
+	 * Find by product id.
+	 *
+	 * @param productId the product id
+	 * @return the product master
+	 */
+	ProductMaster findByProductId(String productId);
 	
 }

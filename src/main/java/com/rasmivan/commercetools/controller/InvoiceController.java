@@ -18,7 +18,7 @@ import com.rasmivan.commercetools.service.InvoiceService;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/commercetools/api/")
+@RequestMapping("/commercetools/api")
 public class InvoiceController {
 	
 	/** The invoice service. */
@@ -31,8 +31,7 @@ public class InvoiceController {
 	 * @param invoiceDto the invoice dto
 	 * @return the response entity
 	 */
-	@CrossOrigin
-	@PutMapping(value = "v1/invoice/add")
+	@PutMapping(value = "/v1/invoice/add")
 	public ResponseEntity<Invoice> addInvoice(@RequestBody InvoiceDto invoiceDto){
 		return new ResponseEntity<>(invoiceService.addInvoice(invoiceDto), HttpStatus.CREATED);
 	}

@@ -22,7 +22,7 @@ import com.rasmivan.commercetools.service.ProductService;
  */
 @RestController
 @CrossOrigin
-@RequestMapping("/commercetools/api/")
+@RequestMapping("/commercetools/api")
 public class ProductController {
 	
 	/** The product service. */
@@ -34,8 +34,7 @@ public class ProductController {
 	 *
 	 * @return the all products
 	 */
-	@CrossOrigin
-	@GetMapping(value = "v1/products")
+	@GetMapping(value = "/v1/products")
 	public ResponseEntity<List<ProductMaster>> getAllProducts(){
 		return new ResponseEntity<>(productService.getAllProduct(), HttpStatus.OK);
 	}
@@ -46,8 +45,7 @@ public class ProductController {
 	 * @param productDto the product dto
 	 * @return the response entity
 	 */
-	@CrossOrigin
-	@PutMapping(value = "v1/product/add")
+	@PutMapping(value = "/v1/product/add")
 	public ResponseEntity<String> addProducts(@RequestBody ProductDto productDto){
 		return new ResponseEntity<>(productService.addProduct(productDto).toString(), HttpStatus.CREATED);
 	}
@@ -58,8 +56,7 @@ public class ProductController {
 	 * @param productId the product id
 	 * @return the product
 	 */
-	@CrossOrigin
-	@GetMapping(value = "v1/product/stock")
+	@GetMapping(value = "/v1/product/stock")
 	public ResponseEntity<ProductDto> getProduct(@RequestParam String productId){
 		return new ResponseEntity<>(productService.getAllStockByProductId(productId), HttpStatus.OK);
 	}

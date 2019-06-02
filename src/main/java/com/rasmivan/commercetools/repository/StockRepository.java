@@ -11,13 +11,24 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.rasmivan.commercetools.domain.ProductMaster;
 import com.rasmivan.commercetools.domain.Stock;
-import com.rasmivan.commercetools.dto.StockDto;
 import com.rasmivan.commercetools.dto.TopAvailableProductDto;
 
+/**
+ * The Interface StockRepository.
+ */
 @Transactional
 public interface StockRepository  extends JpaRepository<Stock, String>, JpaSpecificationExecutor<Stock>{
 	
+	/**
+	 * Gets the stockfor timestamp.
+	 *
+	 * @param startDateTime the start date time
+	 * @param endDateTime the end date time
+	 * @param pageable the pageable
+	 * @return the stockfor timestamp
+	 */
 	@Query("Select NEW com.rasmivan.commercetools.dto.TopAvailableProductDto("
 			+ "stk.id, "
 			+ "stk.timestamp, "
@@ -30,13 +41,28 @@ public interface StockRepository  extends JpaRepository<Stock, String>, JpaSpeci
 			@Param("endDateTime")Instant endDateTime, Pageable pageable);
 	
 	
-	@Query("Select NEW com.rasmivan.commercetools.dto.StockDto("
+	/**
+	 * Gets the current stock by product id.
+	 *
+	 * @param productId the product id
+	 * @param pageable the pageable
+	 * @return the current stock by product id
+	 */
+	@Query("Select NEW com.rasmivan.commercetools.domain.Stock("
 			+ "stk.id, "
 			+ "stk.timestamp, "
 			+ "stk.quantity,"
 			+ "stk.version) from Stock stk "
 			+ "where stk.productId.productId = :productId "
 			+ "order by stk.timestamp, stk.quantity desc")
-	List<StockDto> getCurrentStockByProductId(@Param("productId")String productId, Pageable pageable);
+	Stock getCurrentStockByProductId(@Param("productId")String productId);
+	
+	/**
+	 * Find by product id.
+	 *
+	 * @param productIds the product ids
+	 * @return the stock
+	 */
+	Stock findByProductId(ProductMaster productIds);
 	
 }

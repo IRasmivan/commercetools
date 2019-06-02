@@ -34,6 +34,7 @@ public class Stock {
 	/** The timestamp. */
 	private Instant timestamp;
 	
+    /** The version. */
     private Long version;
 
 	/**
@@ -117,13 +118,34 @@ public class Stock {
 		this.timestamp = timestamp;
 	}
 	
+	/**
+	 * Gets the version.
+	 *
+	 * @return the version
+	 */
 	@Version
 	public Long getVersion() {
 		return version;
 	}
 
+	/**
+	 * Sets the version.
+	 *
+	 * @param version the new version
+	 */
 	public void setVersion(Long version) {
 		this.version = version;
+	}
+
+	public Stock(String id, Instant timestamp, Long quantity, Long version) {
+		this.id = id;
+		this.quantity = quantity;
+		this.timestamp = timestamp;
+		this.version = version;
+	}
+
+	public Stock() {
+		super();
 	}
 	
 }

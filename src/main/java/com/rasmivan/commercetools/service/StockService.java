@@ -4,7 +4,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.util.MultiValueMap;
 
-import com.rasmivan.commercetools.domain.Stock;
 import com.rasmivan.commercetools.dto.ProductDto;
 import com.rasmivan.commercetools.dto.StockDto;
 
@@ -13,24 +12,41 @@ import com.rasmivan.commercetools.dto.StockDto;
  */
 public interface StockService {
 	
+	
 	/**
 	 * Adds the stock.
 	 *
 	 * @param stockDto the stock dto
-	 * @return the stock
+	 * @return the product dto
 	 */
-	Stock addStock(StockDto stockDto);
+	ProductDto addStock(StockDto stockDto);
 	
 	
-	StockDto updateStock(StockDto stockDto, HttpServletRequest request, MultiValueMap<String, String> headers);
+	/**
+	 * Update stock.
+	 *
+	 * @param stockDto the stock dto
+	 * @param request the request
+	 * @param headers the headers
+	 * @return the product dto
+	 */
+	ProductDto updateStock(StockDto stockDto, HttpServletRequest request, MultiValueMap<String, String> headers);
 	
 	/**
 	 * Gets the current stock by product id.
 	 *
 	 * @param productId the product id
-	 * @param headers 
 	 * @return the current stock by product id
 	 */
-	ProductDto getCurrentStockByProductId(String productId, MultiValueMap<String, String> headers);
+	ProductDto getCurrentStockByProductId(String productId);
+
+
+	/**
+	 * Gets the version no.
+	 *
+	 * @param productId the product id
+	 * @return the version no
+	 */
+	MultiValueMap<String, String> getVersionNo(String productId);
 	
 }
