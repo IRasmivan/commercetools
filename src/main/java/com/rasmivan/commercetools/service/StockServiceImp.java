@@ -210,7 +210,11 @@ public class StockServiceImp implements StockService {
 	 */
 	@CachePut(key="#productId + '_version'")
 	private String getVersionByProductId(String productId) {
-		return stockRepository.findByProductId(productRepository.findByProductId(productId)).getVersion().toString();
+		Stock stk = stockRepository.findByProductId(productRepository.findByProductId(productId));
+		if(stk != null) {
+			return stk.getVersion().toString();
+		}
+		return "-1";
 	}
 	
 	/**
