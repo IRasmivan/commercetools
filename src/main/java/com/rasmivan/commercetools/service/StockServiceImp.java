@@ -9,11 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -36,7 +31,6 @@ import com.rasmivan.commercetools.domain.Stock;
  * The Class StockServiceImp.
  */
 @Service
-@CacheConfig(cacheNames={"stock"})
 public class StockServiceImp implements StockService {
 	
 	/** The product repository. */
@@ -50,10 +44,6 @@ public class StockServiceImp implements StockService {
 	/** The product service. */
 	@Autowired
 	ProductService productService;
-	
-	/** The cache manager. */
-	@Autowired
-	CacheManager cacheManager;
 	
 	
 	/**
@@ -98,8 +88,7 @@ public class StockServiceImp implements StockService {
 	 * @param productId the product id
 	 * @return the stock for product id
 	 */
-	@Cacheable(key="{#productId}")
-	private Stock getStockForProductId(String productId) {
+	public Stock getStockForProductId(String productId) {
 		return stockRepository.getCurrentStockByProductId(productId);
 	}
 	
@@ -186,8 +175,6 @@ public class StockServiceImp implements StockService {
 	 * @param stockDto the stock dto
 	 * @return the stock
 	 */
-	@CachePut(key="#stockDto.productId")
-	@CacheEvict(key="#stockDto.productId + '_version'")
 	private Stock saveStock(StockDto stockDto) {
 		return stockRepository.save(copyStockProperties(stockDto));
 	}
@@ -208,9 +195,8 @@ public class StockServiceImp implements StockService {
 	 * @param productId the product id
 	 * @return the version by product id
 	 */
-	@CachePut(key="#productId + '_version'")
-	private String getVersionByProductId(String productId) {
-		Stock stk = stockRepository.findByProductId(productRepository.findByProductId(productId));
+	public String getVersionByProductId(String productId) {
+		Stock stk = stockRepository.getCurrentStockByProductId(productId);
 		if(stk != null) {
 			return stk.getVersion().toString();
 		}

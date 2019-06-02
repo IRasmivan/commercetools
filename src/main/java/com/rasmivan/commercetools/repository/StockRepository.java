@@ -5,13 +5,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.rasmivan.commercetools.domain.ProductMaster;
 import com.rasmivan.commercetools.domain.Stock;
 import com.rasmivan.commercetools.dto.TopAvailableProductDto;
 
@@ -19,6 +21,7 @@ import com.rasmivan.commercetools.dto.TopAvailableProductDto;
  * The Interface StockRepository.
  */
 @Transactional
+@CacheConfig(cacheNames={"stock_repo"})
 public interface StockRepository  extends JpaRepository<Stock, String>, JpaSpecificationExecutor<Stock>{
 	
 	/**
@@ -48,6 +51,7 @@ public interface StockRepository  extends JpaRepository<Stock, String>, JpaSpeci
 	 * @param pageable the pageable
 	 * @return the current stock by product id
 	 */
+	@Cacheable(value = "stocks",  key="{#productId}")
 	@Query("Select NEW com.rasmivan.commercetools.domain.Stock("
 			+ "stk.id, "
 			+ "stk.timestamp, "
@@ -57,12 +61,8 @@ public interface StockRepository  extends JpaRepository<Stock, String>, JpaSpeci
 			+ "order by stk.timestamp, stk.quantity desc")
 	Stock getCurrentStockByProductId(@Param("productId")String productId);
 	
-	/**
-	 * Find by product id.
-	 *
-	 * @param productIds the product ids
-	 * @return the stock
-	 */
-	Stock findByProductId(ProductMaster productIds);
+	
+	@CacheEvict(value = "stocks", allEntries = true)
+	<S extends Stock> S save(S entity);
 	
 }
