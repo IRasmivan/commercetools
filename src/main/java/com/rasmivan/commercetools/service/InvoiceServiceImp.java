@@ -3,7 +3,6 @@ package com.rasmivan.commercetools.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.stereotype.Service;
 
 import com.rasmivan.commercetools.dto.InvoiceDto;
@@ -19,7 +18,6 @@ import com.rasmivan.commercetools.domain.Invoice;
  * The Class InvoiceServiceImp.
  */
 @Service
-@CacheConfig(cacheNames={"invoice"})
 public class InvoiceServiceImp implements InvoiceService {
 	
 	/** The product repository. */

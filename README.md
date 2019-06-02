@@ -21,12 +21,22 @@ The one listed below as :pushpin: are the list of are part of the excisies.
 
 ---
 
-## 2. Tools & framework:
+## 2. Technical Details:
+
+### 2.1 Tools & framework:
 The below are the list of tools and framework used in the project!
 * Spring Boot framework
 * Maven for Packaging and Build
 * Java Programming language
 * MySQL as backend
+
+
+### 2.2 Key Feature to Highlight:
+* Implemented cache to cache data, this is to enable to serve stock get request even if the database is offline! 
+* To check on 'the last change wins' problem on an concurrent request, I have implemented Etag and Version on this spring boot application.
+* Pagination to get the list of top selling products and top availabile product, this was implemented as a Proof of concept (POC) only.
+* Details failure cases are listed in the endpoint section below that are covered .
+* Controller Advice is used to display readable error message, TODO: Other than custom exception, i have not handled using controller advice.
 
 ---
 
@@ -40,7 +50,7 @@ This endpoint will list all the stock that are available for the given ProductId
 
 #### Description of scenario covered:
 * To enable **CONCURRENT REQUEST** for getting the stock for the productId. If stock is found for the productId, then populate response header with key **ETAG** and value for the key with **VERSION** column value from stock table for the given productId.
-* The requested stock for the given productid will be searched from the inmemory **CACHE**, if available the data will be served to the user else it will be searched from the stock table.
+* The requested stock for the given productId will be searched from the inmemory **CACHE**, if available the data will be served to the user else it will be searched from the stock table.
 * If there are **NO STOCK AVAILABLE** for the productId, then I have populated an attribute called StockMessage which has message as 'There are no stock available for this productId'.
 * Check if the user have given valid productId for the stock. If it is **INVALID PRODUCTID**, then respond user as ErroneousJsonException with message as 'Product not found'.
 
@@ -215,6 +225,7 @@ This endpoint list the top 3 available stock and top 3 sales products for the us
 * If there are stock available but less than 3 for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as "There are only 'count of available stock' product that had sales for 'time'".
 * If there are no sales available for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are no product that was available for provided 'time'".
 * If there are stock sales but less than 3 for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are only 'count of sales' product that had sales for 'time'".
+* Group topSellingProduct for the given time, based on the productId & sum the total sales and return to the user.
 
 
 #### Request

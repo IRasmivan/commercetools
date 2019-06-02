@@ -40,7 +40,7 @@ public final class GeneralConstantsUtils {
 	public static final Integer PAGE_NO = 0;
 	
 	/** The Constant PAGE_SIZE_STATISTIC. */
-	public static final Integer PAGE_SIZE_STATISTIC = 3;
+	public static final Integer PAGE_SIZE_STATISTIC = 100;
 	
 	/** The Constant PAGE_SIZE_STOCK. */
 	public static final Integer PAGE_SIZE_STOCK = 1;

@@ -3,13 +3,17 @@ package com.rasmivan.commercetools.service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,11 +29,11 @@ import com.rasmivan.commercetools.repository.StockRepository;
 import com.rasmivan.commercetools.constants.GeneralConstantsUtils;
 import com.rasmivan.commercetools.constants.MessageConstantsUtils;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class StatisticServiceImp.
  */
 @Service
-@CacheConfig(cacheNames={"statistic"})
 public class StatisticServiceImp implements StatisticService {
 	
 	/** The product repository. */
@@ -57,16 +61,13 @@ public class StatisticServiceImp implements StatisticService {
 	 * Get Statistics for the provided time [today, lastMonth]
 	 * ************************************
 	 * 
-	 * **** Failure Scenario Coverage *****
-	 * *** The below condition are checked before adding the stock into the database.
-	 * ** 1) Check if the User have given valid time (today or lastMonth). If its invalid time, then respond user as InvalidStatisticTimeException with message as 'Invalid time for statistics, Please provide a valid value'.
-	 * 
-	 * ** ~~ Special Scenario ~~
-	 * ** 1) If there are no stock available for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as 'There are no product that was available for provided <<time>>'.
-	 * ** 2) If there are stock available but less than 3 for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as 'There are only <<count of available stock>> product that had sales for <<time>>'.
-	 * ** 3) If there are no sales available for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are no product that was available for provided <<time>>'.
-	 * ** 4) If there are stock sales but less than 3 for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are only <<count of sales>> product that had sales for <<time>>'.
-	 * 
+	 * ** Description of scenario ** 
+	 * 1) Check if the User has given a valid time (today or lastMonth). If its invalid time, then respond user as InvalidStatisticTimeException with message as 'Invalid time for statistics, Please provide a valid value'.
+	 * 2) If there are no stock available for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as "There are no product that was available for provided 'time'".
+	 * 3) If there are stock available but less than 3 for the given time, then I have populated an attribute called TopAvailableProductMessage which has message as "There are only 'count of available stock' product that had sales for 'time'".
+	 * 4) If there are no sales available for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are no product that was available for provided 'time'".
+	 * 5) If there are stock sales but less than 3 for the given time, then I have populated an attribute called TopSellingProductsMessage which has message as 'There are only 'count of sales' product that had sales for 'time'".
+	 * 6) Group topSellingProduct for the given time, based on the productId & sum the total sales and return to the user.
 	 * ************************************
 	 * ************************************
 	 *
@@ -117,18 +118,59 @@ public class StatisticServiceImp implements StatisticService {
 	 */
 	private void setTopSellingProducts(String time, StatisticsDto statisticsDto, Instant startDateTime,
 			Instant endDateTime) {
-		Pageable pageable = PageRequest.of(GeneralConstantsUtils.PAGE_NO, GeneralConstantsUtils.PAGE_SIZE_STATISTIC);
 		
-		List<TopSellingProductDto> topSellingProductDto = invoiceRepository.getSalesforTimestamp(startDateTime, endDateTime,pageable);
-		if(topSellingProductDto != null && !topSellingProductDto.isEmpty()) {
-			statisticsDto.setTopSellingProducts(topSellingProductDto);
+		List<TopSellingProductDto> topSellingProduct = null;
+		List<TopSellingProductDto> topSellingProductDto = getAllSalesForTimeStamp(startDateTime, endDateTime);
+		if(!topSellingProductDto.isEmpty()) {
+			topSellingProduct = groupBySortLimitTopSeller(topSellingProductDto);
+			statisticsDto.setTopSellingProducts(topSellingProduct);
 		}
 		
-		if(topSellingProductDto == null || topSellingProductDto.isEmpty()) {
+		if(topSellingProduct == null || topSellingProduct.isEmpty()) {
 			statisticsDto.setTopSellingProductsMessage(GeneralConstantsUtils.NO_SALES + time);
 		} else {
-			statisticsDto.setTopSellingProductsMessage((topSellingProductDto.size() < 3) ?  GeneralConstantsUtils.PREFIX_TXT + topSellingProductDto.size() + GeneralConstantsUtils.PRODUCT_SALES + time : null);
+			statisticsDto.setTopSellingProductsMessage((topSellingProduct.size() < 3) ?  GeneralConstantsUtils.PREFIX_TXT + topSellingProduct.size() + GeneralConstantsUtils.PRODUCT_SALES + time : null);
 		}
+	}
+
+	/**
+	 * Gets the all sales for time stamp.
+	 *
+	 * @param startDateTime the start date time
+	 * @param endDateTime the end date time
+	 * @return the all sales for time stamp
+	 */
+	private List<TopSellingProductDto> getAllSalesForTimeStamp(Instant startDateTime, Instant endDateTime) {
+		
+		List<TopSellingProductDto> topSellingProductDto = new ArrayList<>();
+		List<TopSellingProductDto> topSellingProductPageLimit = null;
+		int currentPage = 0;
+		do {
+			topSellingProductPageLimit = invoiceRepository.getSalesforTimestamp(startDateTime, endDateTime,PageRequest.of(currentPage, GeneralConstantsUtils.PAGE_SIZE_STATISTIC));
+			currentPage++;
+			if(topSellingProductPageLimit != null && !topSellingProductPageLimit.isEmpty()) {
+				topSellingProductDto.addAll(topSellingProductPageLimit);
+			}
+		}while(topSellingProductPageLimit != null && !topSellingProductPageLimit.isEmpty());
+		
+		return topSellingProductDto;
+	}
+
+	/**
+	 * Group by sort limit top seller.
+	 *
+	 * @param topSellingProductDto the top selling product dto
+	 * @return the list
+	 */
+	private List<TopSellingProductDto> groupBySortLimitTopSeller(List<TopSellingProductDto> topSellingProductDto) {
+		Collection<TopSellingProductDto> topSellingProduct = topSellingProductDto.stream()
+		        .collect(Collectors.toMap(TopSellingProductDto::getProductId,
+		                Function.identity(), TopSellingProductDto::merge)).values();
+		
+		return topSellingProduct.stream()
+		.sorted(Comparator.comparing(TopSellingProductDto::getItemSold).reversed())
+		.limit(3)
+		.collect(Collectors.toList());
 	}
 
 	/**

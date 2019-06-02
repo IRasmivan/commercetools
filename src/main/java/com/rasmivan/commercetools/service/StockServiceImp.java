@@ -51,6 +51,7 @@ public class StockServiceImp implements StockService {
 	@Autowired
 	ProductService productService;
 	
+	/** The cache manager. */
 	@Autowired
 	CacheManager cacheManager;
 	
@@ -61,17 +62,11 @@ public class StockServiceImp implements StockService {
 	 * Get Current stock for the ProductId
 	 * ************************************
 	 * 
-	 * **** Failure Scenario Coverage *****
-	 * *** The below condition are checked before adding the stock into the database.
-	 * ** 1) Check if the User have given valid prodidId for the stock. If its invalid Product, then respond user as ErroneousJsonException with message as 'Product not found'.
-	 * 
-	 * ** ~~ Special Scenario ~~
-	 * ** 1) To Enable Concurrent requests for getting the stock for an productId. If an Stock is found for an productId, then populate header with Key 'ETAG' and value as the version from the database for the stock.
-	 * ** 2) If there are no stock available for the productId, then I have populated an attribute called StockMessage which has message as 'There are no stock available for this productId'.
-	 * 
-	 * ************************************
-	 * If the user have provided a valid Stock, then update the stock into Database.
-	 * ************************************
+	 *	#### Description of scenario covered:
+	 *	1) To enable **CONCURRENT REQUEST** for getting the stock for the productId. If stock is found for the productId, then populate response header with key **ETAG** and value for the key with **VERSION** column value from stock table for the given productId.
+	 *	2) The requested stock for the given productId will be searched from the inmemory **CACHE**, if available the data will be served to the user else it will be searched from the stock table.
+	 *	3) If there are **NO STOCK AVAILABLE** for the productId, then I have populated an attribute called StockMessage which has message as 'There are no stock available for this productId'.
+	 *	4) Check if the user have given valid productId for the stock. If it is **INVALID PRODUCTID**, then respond user as ErroneousJsonException with message as 'Product not found'.
 	 * 
 	 * ************************************
 	 * ************************************
@@ -97,6 +92,12 @@ public class StockServiceImp implements StockService {
 		return productDto;
 	}
 	
+	/**
+	 * Gets the stock for product id.
+	 *
+	 * @param productId the product id
+	 * @return the stock for product id
+	 */
 	@Cacheable(key="{#productId}")
 	private Stock getStockForProductId(String productId) {
 		return stockRepository.getCurrentStockByProductId(productId);
@@ -139,19 +140,18 @@ public class StockServiceImp implements StockService {
 	 * Update Stock into the Database
 	 * ************************************
 	 * 
-	 * **** Failure Scenario Coverage *****
-	 * *** The below condition are checked before adding the stock into the database.
-	 * ** 1) Check if the User have given valid JSON. If its Invalid JSON, then respond user as ErroneousJsonException with message as 'Update failed due to erroneous JSON'
-	 * ** 2) Check if the User have given valid prodidId for the stock. If its invalid Product, then respond user as ErroneousJsonException with message as 'Product not found'
-	 * ** 3) Check if the User have given valid stockId that needs to be updated. If its invalid stockId, then respond user as ErroneousJsonException with message as 'Invalid stockid'
-	 * ** 4) Check if the User have given time stamp for the stock greater than or equal to existing stock time stamp for the productId. If lesser than then respond user that its an 'Outdated Stock'
-	 * 
-	 * ** ~~ Special Scenario ~~
-	 * ** 1) To Enable Concurrent requests for getting the stock for an productId. 
-	 * 			If a Stock is found for a productId, The request HTTP header is checked for key 'if-Match' and the value is checked if the value matches the current database version for the stock.
-	 * 			If match, the stock is updated
-	 * 			else, http status precondition failed exception is thrown to user. 
-	 * 
+	 * #### Description of scenario covered:
+	 * 1) If user provide a invalid productId in the request JSON, then respond user as ErroneousJsonException with a message 'Invalid Request :: Reason - Product not found'.
+	 * 2) If user provide a invalid stockId in the request JSON, then respond user as ErroneousJsonException with a message 'Invalid Request :: Reason - Invalid stockId'.
+	 * 3) If user provide a timeStamp for an existing stock with an earlier timeStamp to update, then respond with HTTP status as 204 No Content.
+	 * 4) If a valid JSON request is provided. Since I have implemented cache, the cached values are refreshed so that the GET request can use the data from cache.
+	
+	 *	##### Special Case
+	 *	For concurrent requests for updating the same stock. 
+	 *	* If a Stock is found for a productId, Then
+	 *		+ The request HTTP header is checked for a key 'if-Match' and the value from if-Match key is validated with the current stock version. if TRUE,  then
+	 *			+ The stock is updated
+	 *		+ else, HTTP status precondition failed exception is thrown to user. 
 	 * ************************************
 	 * If the user have provided a valid Stock, then update the stock into Database.
 	 * ************************************
@@ -180,6 +180,12 @@ public class StockServiceImp implements StockService {
 	}
 	
 
+	/**
+	 * Save stock.
+	 *
+	 * @param stockDto the stock dto
+	 * @return the stock
+	 */
 	@CachePut(key="#stockDto.productId")
 	@CacheEvict(key="#stockDto.productId + '_version'")
 	private Stock saveStock(StockDto stockDto) {
@@ -196,6 +202,12 @@ public class StockServiceImp implements StockService {
 		return headers;
 	}
 
+	/**
+	 * Gets the version by product id.
+	 *
+	 * @param productId the product id
+	 * @return the version by product id
+	 */
 	@CachePut(key="#productId + '_version'")
 	private String getVersionByProductId(String productId) {
 		return stockRepository.findByProductId(productRepository.findByProductId(productId)).getVersion().toString();
@@ -253,7 +265,7 @@ public class StockServiceImp implements StockService {
 			optStk = stockRepository.findById(stockDto.getId());
 			if(optStk.isPresent()) {
 				stk = optStk.get();
-				if(stockDto.getTimestamp().isBefore(stk.getTimestamp())) {
+				if(stockDto.getTimestamp().isBefore(stk.getTimestamp()) || stockDto.getTimestamp().equals(stk.getTimestamp())) {
 					throw new OutdateStockException(MessageConstantsUtils.OUTDATED_STOCK);
 				}
 			} else {
@@ -318,6 +330,12 @@ public class StockServiceImp implements StockService {
 		return productDto;
 	}
 
+	/**
+	 * Copy stock to dto.
+	 *
+	 * @param stk the stk
+	 * @return the stock dto
+	 */
 	private StockDto copyStockToDto(Stock stk) {
 		StockDto stkDto = new StockDto();
 		BeanUtils.copyProperties(stk, stkDto);

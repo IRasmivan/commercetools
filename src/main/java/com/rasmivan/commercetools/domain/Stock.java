@@ -84,7 +84,7 @@ public class Stock {
 	 * @return the product id
 	 */
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "productid", nullable = false)
+	@JoinColumn(name = "productid", nullable = false, unique = true)
 	@JsonBackReference
 	public ProductMaster getProductId() {
 		return productId;

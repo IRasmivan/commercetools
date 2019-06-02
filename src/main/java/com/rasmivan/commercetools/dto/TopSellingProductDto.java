@@ -58,4 +58,24 @@ public class TopSellingProductDto {
 		this.itemSold = itemSold;
 	}
 
+	/**
+	 * Instantiates a new top selling product dto.
+	 */
+	public TopSellingProductDto() {
+		super();
+	}
+	
+	/**
+	 * Merge.
+	 *
+	 * @param another the another
+	 * @return the top selling product dto
+	 */
+	public TopSellingProductDto merge(TopSellingProductDto another){
+	     this.itemSold += another.getItemSold();
+	     return this;
+	}
+	
+	
+
 }
